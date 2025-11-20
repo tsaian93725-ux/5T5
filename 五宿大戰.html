@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新宿大戰 - 史上最強VS現代最強術師</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+        
+        body {
+            background: url('https://picsum.photos/id/1031/1920/1080') center/cover no-repeat fixed;
+            background-blend-mode: overlay;
+            background-color: rgba(0,0,0,0.7);
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 选择界面样式 */
+        .select-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .game-title {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+            background: linear-gradient(90deg, #ff0080, #00ffff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .character-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .character-card {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #fff;
+            border-radius: 15px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .character-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255,255,255,0.3);
+            border-color: #ffd700;
+        }
+        
+        .character-card.selected {
+            border-color: #ff4500;
+            box-shadow: 0 0 40px rgba(255,69,0,0.5);
+        }
+        
+        .char-img {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 1rem;
+            border: 3px solid #fff;
+        }
+        
+        .char-name {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .char-stats {
+            text-align: left;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .start-btn {
+            margin-top: 3rem;
+            padding: 1rem 3rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: #ff4500;
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .start-btn:hover {
+            background: #ff6347;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255,100,71,0.5);
+        }
+        
+        .start-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* 战斗界面样式 */
+        .battle-screen {
+            display: none; /* 默认隐藏 */
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .battle-header {
+            text-align: center;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(0,0,0,0.7);
+            border-radius: 10px;
+        }
+        
+        .battle-title {
+            font-size: 2rem;
+            font-weight: 900;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+        
+        .battle-arena {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .combatant-panel {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #fff;
+            border-radius: 15px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+        
+        .player-panel {
+            border-color: #00ffff;
+        }
+        
+        .boss-panel {
+            border-color: #ff4500;
+        }
+        
+        .combatant-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .combatant-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fff;
+            margin-right: 1rem;
+        }
+        
+        .combatant-info {
+            flex: 1;
+        }
+        
+        .combatant-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .health-bar, .skill-bar {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ff4500);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        
+        .skill-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #0080ff);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        
+        .stat-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .buff-icons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .buff-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255,215,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #000;
+        }
+        
+        .debuff-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(128,0,128,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        
+        .mohuro-panel {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            padding: 1rem;
+            margin-top: 1rem;
+            display: block;
+        }
+        
+        .skill-panel {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #fff;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .skill-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+        
+        .skill-btn {
+            padding: 1rem;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #fff;
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            position: relative;
+        }
+        
+        .skill-btn:hover:not(:disabled) {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .skill-btn:disabled {
+            background: rgba(255,255,255,0.05);
+            border-color: #666;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .skill-name {
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+        
+        .skill-desc {
+            font-size: 0.8rem;
+            margin-bottom: 0.3rem;
+            color: #ccc;
+        }
+        
+        .skill-cooldown {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #ff4500;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        
+        .ultra-skill {
+            border-color: #ffd700;
+            background: rgba(255,215,0,0.1);
+        }
+        
+        .ultra-skill:hover:not(:disabled) {
+            background: rgba(255,215,0,0.2);
+        }
+        
+        .log-panel {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #fff;
+            border-radius: 15px;
+            padding: 1rem;
+            height: 200px;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+        
+        .log-entry {
+            margin-bottom: 0.5rem;
+            padding: 0.3rem;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .log-player {
+            background: rgba(0,255,255,0.1);
+            border-left: 3px solid #00ffff;
+        }
+        
+        .log-enemy {
+            background: rgba(255,69,0,0.1);
+            border-left: 3px solid #ff4500;
+        }
+        
+        .log-system {
+            background: rgba(255,215,0,0.1);
+            border-left: 3px solid #ffd700;
+            font-weight: 700;
+        }
+        
+        .log-critical {
+            color: #ff4500;
+            font-weight: 700;
+        }
+        
+        .turn-indicator {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #ffd700;
+        }
+        
+        .game-over-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            text-align: center;
+        }
+        
+        .modal-content {
+            background: #111;
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .game-over-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: #ff4500;
+        }
+        
+        .game-over-message {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .restart-btn {
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            background: #ffd700;
+            color: #000;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .restart-btn:hover {
+            background: #ffed4b;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255,237,75,0.5);
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .character-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .battle-arena {
+                grid-template-columns: 1fr;
+            }
+            
+            .skill-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .game-title {
+                font-size: 2.2rem;
+            }
+            
+            .char-name {
+                font-size: 1.7rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .skill-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .combatant-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .combatant-avatar {
+                margin-right: 0;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 角色选择界面 -->
+        <div class="select-screen" id="selectScreen">
+            <h1 class="game-title">新宿大戰</h1>
+            <h2 class="game-subtitle mb-6">史上最強VS現代最強術師</h2>
+            
+            <div class="character-grid">
+                <!-- 五条悟卡片 -->
+                <div class="character-card" id="gojoCard" onclick="selectCharacter('gojo')">
+                    <img src="https://picsum.photos/id/64/400/400" alt="五条悟" class="char-img">
+                    <h3 class="char-name">五条悟</h3>
+                    <div class="char-stats">
+                        <p>血量: 20000</p>
+                        <p>物理攻擊: 1000</p>
+                        <p>魔法攻擊: 1000</p>
+                        <p>防禦力: 1500</p>
+                        <p>速度: 120</p>
+                        <p>被動: 無下限術式、六眼</p>
+                    </div>
+                </div>
+                
+                <!-- 宿儺卡片 -->
+                <div class="character-card" id="sukunaCard" onclick="selectCharacter('sukuna')">
+                    <img src="https://picsum.photos/id/237/400/400" alt="宿儺" class="char-img">
+                    <h3 class="char-name">宿儺</h3>
+                    <div class="char-stats">
+                        <p>血量: 25000</p>
+                        <p>物理攻擊: 2000</p>
+                        <p>魔法攻擊: 2000</p>
+                        <p>防禦力: 900</p>
+                        <p>速度: 100</p>
+                        <p>特性: 高攻高血、召喚魔須羅</p>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="start-btn" id="startBtn" disabled onclick="startGame()">開始戰鬥</button>
+        </div>
+        
+        <!-- 战斗界面 -->
+        <div class="battle-screen" id="battleScreen">
+            <div class="battle-header">
+                <h1 class="battle-title">新宿大戰 - 戰鬥中</h1>
+                <div class="turn-indicator" id="turnIndicator">戰鬥即將開始...</div>
+            </div>
+            
+            <div class="battle-arena">
+                <!-- 玩家面板 -->
+                <div class="combatant-panel player-panel" id="playerPanel">
+                    <div class="combatant-header">
+                        <img src="" alt="玩家角色" class="combatant-avatar" id="playerAvatar">
+                        <div class="combatant-info">
+                            <h2 class="combatant-name" id="playerName"></h2>
+                            <div class="stat-labels">
+                                <span>血量: <span id="playerHp">0</span>/<span id="playerMaxHp">0</span></span>
+                                <span>技能值: <span id="playerSkill">0</span>/100</span>
+                            </div>
+                            <div class="health-bar">
+                                <div class="health-fill" id="playerHealthFill" style="width: 100%"></div>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-fill" id="playerSkillFill" style="width: 0%"></div>
+                            </div>
+                            <div class="buff-icons" id="playerBuffIcons"></div>
+                        </div>
+                    </div>
+                    <!-- 玩家召唤物容器 -->
+                    <div id="playerSummons"></div>
+                </div>
+                
+                <!-- BOSS面板 -->
+                <div class="combatant-panel boss-panel" id="bossPanel">
+                    <div class="combatant-header">
+                        <img src="" alt="BOSS角色" class="combatant-avatar" id="bossAvatar">
+                        <div class="combatant-info">
+                            <h2 class="combatant-name" id="bossName"></h2>
+                            <div class="stat-labels">
+                                <span>血量: <span id="bossHp">0</span>/<span id="bossMaxHp">0</span></span>
+                                <span>技能值: <span id="bossSkill">0</span>/100</span>
+                            </div>
+                            <div class="health-bar">
+                                <div class="health-fill" id="bossHealthFill" style="width: 100%"></div>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-fill" id="bossSkillFill" style="width: 0%"></div>
+                            </div>
+                            <div class="buff-icons" id="bossBuffIcons"></div>
+                        </div>
+                    </div>
+                    <!-- BOSS召唤物容器 -->
+                    <div id="bossSummons"></div>
+                </div>
+            </div>
+            
+            <!-- 技能面板 -->
+            <div class="skill-panel">
+                <h3 class="mb-4">技能欄</h3>
+                <div class="skill-grid" id="skillGrid">
+                    <!-- 技能按钮将通过JS动态生成 -->
+                </div>
+            </div>
+            
+            <!-- 战斗日志 -->
+            <div class="log-panel" id="logPanel">
+                <div class="log-entry log-system">戰鬥開始！誰將贏得新宿之戰？</div>
+            </div>
+        </div>
+        
+        <!-- 游戏结束弹窗 -->
+        <div class="game-over-modal" id="gameOverModal">
+            <div class="modal-content">
+                <h2 class="game-over-title" id="gameOverTitle">戰鬥結束</h2>
+                <p class="game-over-message" id="gameOverMessage"></p>
+                <button class="restart-btn" onclick="restartGame()">重新開始</button>
+            </div>
+        </div>
+        
+        <!-- 魔須羅模板（动态挂载） -->
+        <div id="mohuroTemplate" style="display: none;">
+            <div class="mohuro-panel">
+                <div class="combatant-header">
+                    <img src="https://picsum.photos/id/1025/200/200" alt="魔須羅" class="combatant-avatar" style="width: 60px; height: 60px;">
+                    <div class="combatant-info">
+                        <h3 class="combatant-name" style="font-size: 1.2rem;">魔須羅</h3>
+                        <div class="stat-labels">
+                            <span>血量: <span class="mohuro-hp">3000</span>/3000</span>
+                        </div>
+                        <div class="health-bar" style="height: 15px;">
+                            <div class="mohuro-health-fill" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. 全局变量简化（避免复杂嵌套导致初始化失败）
+        let selectedChar = null;
+        let playerData = null;
+        let bossData = null;
+        let mohuroData = {
+            name: "魔須羅",
+            maxHp: 3000,
+            hp: 3000,
+            physicalAtk: 1000,
+            defense: 2000, // 提高防御，避免被秒杀
+            attackCounter: 0,
+            isAlive: false,
+            summoner: null // 'player' 或 'boss'
+        };
+        let gameStarted = false;
+        let currentTurn = 'player';
+        let playerStunned = false;
+        let bossStunned = false;
+        
+        // 2. DOM元素直接获取（避免缓存失效）
+        const selectScreen = document.getElementById('selectScreen');
+        const battleScreen = document.getElementById('battleScreen');
+        const startBtn = document.getElementById('startBtn');
+        const gojoCard = document.getElementById('gojoCard');
+        const sukunaCard = document.getElementById('sukunaCard');
+        
+        // 3. 角色基础数据（修复技能冷却逻辑：新增currentCd存储当前冷却）
+        const charData = {
+            gojo: {
+                name: "五条悟",
+                avatar: "https://picsum.photos/id/64/400/400",
+                maxHp: 20000,
+                hp: 20000,
+                atk: 1000,
+                def: 1500,
+                speed: 120,
+                skillGauge: 0,
+                passives: { sixEyes: false, limitlessCounter: 0 },
+                skills: [
+                    { id: "normal", name: "一般攻擊", desc: "對單體造成510%物理傷害，+45技能值", type: "normal", cd: 0, currentCd: 0, multiplier: 5.1 },
+                    { id: "he", name: "赫", desc: "對全體造成870%物理傷害+2次20%魔法傷害，敵防-20%", type: "skill", cd: 2, currentCd: 0 },
+                    { id: "sou", name: "蒼", desc: "對全體造成700%物理傷害，20%眩暈1回合", type: "skill", cd: 3, currentCd: 0, multiplier: 7.0 },
+                    { id: "domainVoid", name: "領域展開‧無量空處", desc: "敵攻防大幅下降，停止行動2回合（消耗100技能值）", type: "ultra", cd: 0, currentCd: 0 },
+                    { id: "voidTechnique", name: "200%虛式茲", desc: "造成1500%物理傷害（消耗100技能值）", type: "ultra", cd: 0, currentCd: 0, multiplier: 15 }
+                ]
+            },
+            sukuna: {
+                name: "宿儺",
+                avatar: "https://picsum.photos/id/237/400/400",
+                maxHp: 25000,
+                hp: 25000,
+                atk: 2000,
+                def: 900,
+                speed: 100,
+                skillGauge: 0,
+                skills: [
+                    { id: "normal", name: "一般攻擊", desc: "對單體造成400%物理傷害，+35技能值", type: "normal", cd: 0, currentCd: 0, multiplier: 4 },
+                    { id: "kai", name: "解", desc: "對單體造成3~5次350%物理傷害（冷卻2回合）", type: "skill", cd: 2, currentCd: 0, multiplier: 3.5 },
+                    { id: "fireArrow", name: "火焰箭", desc: "對全體造成3次混合傷害（冷卻5回合）", type: "skill", cd: 5, currentCd: 0 },
+                    { id: "summonMohuro", name: "召喚「魔須羅」", desc: "召喚魔須羅，自身防+500，每回合回血5%（消耗100技能值）", type: "ultra", cd: 0, currentCd: 0 },
+                    { id: "domainKitchen", name: "領域展開 伏魔御廚子", desc: "造成目標15%最大HP傷害+400點，限制行動1回合（消耗100技能值）", type: "ultra", cd: 0, currentCd: 0 }
+                ]
+            }
+        };
+        
+        // 4. 选择角色（简化逻辑，确保状态正确）
+        function selectCharacter(charId) {
+            console.log("选择角色：", charId); // 调试日志
+            selectedChar = charId;
+            
+            // 更新卡片样式
+            gojoCard.classList.remove('selected');
+            sukunaCard.classList.remove('selected');
+            document.getElementById(charId + 'Card').classList.add('selected');
+            
+            // 启用开始按钮
+            startBtn.disabled = false;
+        }
+        
+        // 5. 开始游戏（核心修复：确保界面切换和数据初始化完整）
+        function startGame() {
+            console.log("开始游戏，选择角色：", selectedChar); // 调试日志
+            if (!selectedChar) return;
+            
+            // 初始化玩家和BOSS数据（深拷贝避免引用问题）
+            if (selectedChar === 'gojo') {
+                playerData = JSON.parse(JSON.stringify(charData.gojo));
+                bossData = JSON.parse(JSON.stringify(charData.sukuna));
+            } else {
+                playerData = JSON.parse(JSON.stringify(charData.sukuna));
+                bossData = JSON.parse(JSON.stringify(charData.gojo));
+            }
+            
+            // 重置魔須羅状态（关键：确保初始HP为3000，存活状态为false）
+            mohuroData = {
+                name: "魔須羅",
+                maxHp: 3000,
+                hp: 3000, // 初始满血
+                physicalAtk: 1000,
+                defense: 2000, // 高防御避免被秒杀
+                attackCounter: 0,
+                isAlive: false,
+                summoner: null
+            };
+            
+            // 清空召唤物容器
+            document.getElementById('playerSummons').innerHTML = '';
+            document.getElementById('bossSummons').innerHTML = '';
+            
+            // 更新UI（直接操作DOM，避免函数嵌套中断）
+            updatePlayerUI();
+            updateBossUI();
+            generateSkills();
+            
+            // 切换界面（关键：确保display属性正确设置）
+            selectScreen.style.display = 'none';
+            battleScreen.style.display = 'flex';
+            console.log("界面切换完成"); // 调试日志
+            
+            // 判定先手
+            determineFirst();
+            
+            gameStarted = true;
+        }
+        
+        // 6. 更新玩家UI（简化函数，确保执行成功）
+        function updatePlayerUI() {
+            document.getElementById('playerAvatar').src = playerData.avatar;
+            document.getElementById('playerName').textContent = playerData.name;
+            document.getElementById('playerHp').textContent = playerData.hp;
+            document.getElementById('playerMaxHp').textContent = playerData.maxHp;
+            document.getElementById('playerSkill').textContent = playerData.skillGauge;
+            document.getElementById('playerHealthFill').style.width = `${(playerData.hp / playerData.maxHp) * 100}%`;
+            document.getElementById('playerSkillFill').style.width = `${playerData.skillGauge}%`;
+        }
+        
+        // 7. 更新BOSS UI（同上）
+        function updateBossUI() {
+            document.getElementById('bossAvatar').src = bossData.avatar;
+            document.getElementById('bossName').textContent = bossData.name;
+            document.getElementById('bossHp').textContent = bossData.hp;
+            document.getElementById('bossMaxHp').textContent = bossData.maxHp;
+            document.getElementById('bossSkill').textContent = bossData.skillGauge;
+            document.getElementById('bossHealthFill').style.width = `${(bossData.hp / bossData.maxHp) * 100}%`;
+            document.getElementById('bossSkillFill').style.width = `${bossData.skillGauge}%`;
+        }
+        
+        // 8. 更新魔須羅UI（新增：确保召唤后HP显示正确）
+        function updateMohuroUI() {
+            if (!mohuroData.isAlive) return;
+            
+            const mohuroPanel = document.querySelector('.mohuro-panel');
+            if (mohuroPanel) {
+                const mohuroHpElem = mohuroPanel.querySelector('.mohuro-hp');
+                const mohuroHealthFillElem = mohuroPanel.querySelector('.mohuro-health-fill');
+                
+                if (mohuroHpElem && mohuroHealthFillElem) {
+                    mohuroHpElem.textContent = mohuroData.hp;
+                    mohuroHealthFillElem.style.width = `${(mohuroData.hp / mohuroData.maxHp) * 100}%`;
+                }
+            }
+        }
+        
+        // 9. 生成技能按钮（核心修复：正确判断冷却状态，确保技能可使用）
+        function generateSkills() {
+            const skillGrid = document.getElementById('skillGrid');
+            skillGrid.innerHTML = '';
+            
+            playerData.skills.forEach(skill => {
+                const btn = document.createElement('button');
+                btn.className = `skill-btn ${skill.type === 'ultra' ? 'ultra-skill' : ''}`;
+                
+                // 显示冷却时间（如果有）
+                const cdHtml = skill.currentCd > 0 ? `<div class="skill-cooldown">${skill.currentCd}</div>` : '';
+                btn.innerHTML = `
+                    <div class="skill-name">${skill.name}</div>
+                    <div class="skill-desc">${skill.desc}</div>
+                    ${cdHtml}
+                `;
+                
+                btn.onclick = () => useSkill(skill.id);
+                
+                // 禁用条件：冷却中 或 大招无技能值（修复：使用currentCd判断）
+                const isDisabled = skill.currentCd > 0 || (skill.type === 'ultra' && playerData.skillGauge < 100);
+                btn.disabled = isDisabled;
+                
+                skillGrid.appendChild(btn);
+            });
+        }
+        
+        // 10. 判定先手（简化逻辑）
+        function determineFirst() {
+            const playerSpeed = playerData.speed;
+            const bossSpeed = bossData.speed;
+            const turnIndicator = document.getElementById('turnIndicator');
+            
+            if (playerSpeed > bossSpeed) {
+                currentTurn = 'player';
+                turnIndicator.textContent = `你的回合 - ${playerData.name}準備攻擊！`;
+                addLog('system', `${playerData.name}憑藉速度優勢先手！`);
+            } else {
+                currentTurn = 'boss';
+                turnIndicator.textContent = `敵人回合 - ${bossData.name}發動攻擊！`;
+                addLog('system', `${bossData.name}憑藉速度優勢先手！`);
+                setTimeout(bossAttack, 1500);
+            }
+        }
+        
+        // 11. 使用技能（核心修复：冷却时间设置正确，技能值增加正常）
+        function useSkill(skillId) {
+            if (!gameStarted || currentTurn !== 'player' || playerStunned) return;
+            
+            const skill = playerData.skills.find(s => s.id === skillId);
+            if (!skill) return;
+            
+            // 消耗技能值（大招）
+            if (skill.type === 'ultra') {
+                if (playerData.skillGauge < 100) return;
+                playerData.skillGauge -= 100;
+            }
+            
+            // 设置冷却时间（修复：使用currentCd存储当前冷却，不修改原cd）
+            if (skill.cd > 0) {
+                skill.currentCd = skill.cd;
+            }
+            
+            // 执行技能效果
+            runSkillEffect('player', skill);
+            
+            // 更新UI
+            updatePlayerUI();
+            updateBossUI();
+            updateMohuroUI(); // 同步魔須羅UI
+            generateSkills(); // 重新生成技能按钮，更新冷却状态
+            
+            // 检查战斗结束
+            if (checkGameOver()) return;
+            
+            // 处理眩晕状态
+            if (bossStunned) {
+                addLog('system', `敵方被限制無法行動，${playerData.name}繼續攻擊！`);
+                document.getElementById('turnIndicator').textContent = `你的回合 - ${playerData.name}繼續攻擊！`;
+                return;
+            }
+            
+            // 切换回合
+            currentTurn = 'boss';
+            document.getElementById('turnIndicator').textContent = `敵人回合 - ${bossData.name}發動攻擊！`;
+            setTimeout(() => {
+                nextRound(); // 回合切换时递减冷却
+                bossAttack();
+            }, 1500);
+        }
+        
+        // 12. 执行技能效果（核心修复：魔須羅召唤逻辑，确保出场后存活）
+        function runSkillEffect(userType, skill) {
+            const attacker = userType === 'player' ? playerData : bossData;
+            const defender = userType === 'player' ? bossData : playerData;
+            const logType = userType === 'player' ? 'player' : 'enemy';
+            
+            addLog(logType, `${attacker.name}使用了「${skill.name}」！`);
+            
+            switch(skill.id) {
+                case 'normal':
+                    const normalDmg = calcPhysDmg(attacker.atk, defender.def, skill.multiplier);
+                    defender.hp = Math.max(0, defender.hp - normalDmg);
+                    attacker.skillGauge = Math.min(100, attacker.skillGauge + (userType === 'player' ? 45 : 35));
+                    addLog(logType, `造成${normalDmg}點物理傷害！`);
+                    break;
+                    
+                case 'he':
+                    const hePhys = calcPhysDmg(attacker.atk, defender.def, 8.7);
+                    const heMagic = calcMagicDmg(attacker.atk, 0.2) * 2;
+                    const heTotal = hePhys + heMagic;
+                    defender.hp = Math.max(0, defender.hp - heTotal);
+                    defender.def *= 0.8;
+                    attacker.skillGauge = Math.min(100, attacker.skillGauge + 30);
+                    addLog(logType, `造成${heTotal}點混合傷害，${defender.name}防禦-20%！`);
+                    break;
+                    
+                case 'sou':
+                    const souDmg = calcPhysDmg(attacker.atk, defender.def, skill.multiplier);
+                    defender.hp = Math.max(0, defender.hp - souDmg);
+                    attacker.skillGauge = Math.min(100, attacker.skillGauge + 35);
+                    addLog(logType, `造成${souDmg}點物理傷害！`);
+                    if (Math.random() < 0.2) {
+                        bossStunned = true;
+                        addLog(logType, `${defender.name}被眩暈1回合！`);
+                    }
+                    break;
+                    
+                case 'domainVoid':
+                    defender.def *= 0.1; // 防禦-90%
+                    defender.atk *= 0.4; // 攻擊-60%
+                    bossStunned = true;
+                    addLog(logType, `${defender.name}攻防大幅下降，2回合內無法行動！`);
+                    break;
+                    
+                case 'voidTechnique':
+                    const voidDmg = calcPhysDmg(attacker.atk, defender.def, skill.multiplier);
+                    defender.hp = Math.max(0, defender.hp - voidDmg);
+                    addLog(logType, `造成${voidDmg}點超強物理傷害！`);
+                    break;
+                    
+                case 'kai':
+                    const hitCount = Math.floor(Math.random() * 3) + 3;
+                    let kaiTotal = 0;
+                    for (let i = 0; i < hitCount; i++) {
+                        kaiTotal += calcPhysDmg(attacker.atk, defender.def, skill.multiplier);
+                    }
+                    defender.hp = Math.max(0, defender.hp - kaiTotal);
+                    attacker.skillGauge = Math.min(100, attacker.skillGauge + 40);
+                    addLog(logType, `發動${hitCount}次攻擊，總計${kaiTotal}點傷害！`);
+                    break;
+                    
+                case 'fireArrow':
+                    let fireTotal = 0;
+                    for (let i = 0; i < 3; i++) {
+                        fireTotal += calcMagicDmg(attacker.atk, 1) + calcPhysDmg(attacker.atk, defender.def, 0.3);
+                    }
+                    defender.hp = Math.max(0, defender.hp - fireTotal);
+                    attacker.skillGauge = Math.min(100, attacker.skillGauge + 45);
+                    addLog(logType, `造成${fireTotal}點混合傷害！`);
+                    break;
+                    
+                case 'summonMohuro':
+                    // 核心修复：魔須羅召唤逻辑
+                    mohuroData.isAlive = true;
+                    mohuroData.summoner = userType;
+                    mohuroData.hp = mohuroData.maxHp; // 确保召唤时满血
+                    mohuroData.attackCounter = 0; // 重置攻击计数器
+                    
+                    const summonContainer = userType === 'player' ? 'playerSummons' : 'bossSummons';
+                    
+                    // 生成魔須羅面板（修复：正确克隆模板并显示）
+                    const mohuroPanel = document.getElementById('mohuroTemplate').cloneNode(true);
+                    mohuroPanel.style.display = 'block';
+                    document.getElementById(summonContainer).innerHTML = '';
+                    document.getElementById(summonContainer).appendChild(mohuroPanel);
+                    
+                    // 召唤者加防
+                    attacker.def += 500;
+                    addLog(logType, `成功召喚魔須羅！${attacker.name}防禦+500，每回合回血5%！`);
+                    updateMohuroUI(); // 召唤后立即更新UI，显示满血
+                    break;
+                    
+                case 'domainKitchen':
+                    const hpDmg = Math.floor(defender.maxHp * 0.15);
+                    const fixedDmg = 400;
+                    const kitchenTotal = hpDmg + fixedDmg;
+                    defender.hp = Math.max(0, defender.hp - kitchenTotal);
+                    
+                    if (userType === 'player') {
+                        bossStunned = true;
+                    } else {
+                        playerStunned = true;
+                    }
+                    
+                    addLog(logType, `造成${hpDmg}點最大HP傷害+${fixedDmg}點固定傷害，總計${kitchenTotal}點！`);
+                    addLog(logType, `${defender.name}被限制行動1回合！`);
+                    break;
+            }
+        }
+        
+        // 13. 计算物理伤害（优化：降低伤害倍率，避免魔須羅被秒杀）
+        function calcPhysDmg(atk, def, multiplier) {
+            const base = atk * multiplier * 1.2; // 降低基础伤害倍率
+            const reduction = def > 0 ? Math.min(0.9, (def / 100) * 0.6) : 0; // 提高防御减伤效果
+            return Math.floor(base * (1 - reduction));
+        }
+        
+        // 14. 计算魔法伤害（优化：降低伤害）
+        function calcMagicDmg(atk, multiplier) {
+            const ratio = 0.5 + Math.random() * 0.15; // 降低随机倍率
+            return Math.floor(atk * ratio * multiplier);
+        }
+        
+        // 15. BOSS攻击（修复：魔須羅不会被BOSS误杀）
+        function bossAttack() {
+            if (!gameStarted || bossStunned) {
+                if (bossStunned) {
+                    addLog('enemy', `${bossData.name}被限制無法行動！`);
+                    bossStunned = false;
+                }
+                
+                // 切换回玩家回合
+                currentTurn = 'player';
+                document.getElementById('turnIndicator').textContent = `你的回合 - ${playerData.name}準備攻擊！`;
+                generateSkills();
+                return;
+            }
+            
+            // 选择技能
+            let skill = null;
+            const ultraSkills = bossData.skills.filter(s => s.type === 'ultra' && bossData.skillGauge >= 100);
+            
+            if (ultraSkills.length > 0) {
+                // 宿儺优先召唤魔須羅
+                if (bossData.name === '宿儺' && !mohuroData.isAlive) {
+                    skill = ultraSkills.find(s => s.id === 'summonMohuro') || ultraSkills[0];
+                } else {
+                    skill = ultraSkills[Math.floor(Math.random() * ultraSkills.length)];
+                }
+            } else {
+                const normalSkills = bossData.skills.filter(s => s.type !== 'ultra' && s.currentCd === 0);
+                skill = normalSkills[Math.floor(Math.random() * normalSkills.length)];
+            }
+            
+            if (skill) {
+                // 消耗技能值
+                if (skill.type === 'ultra') bossData.skillGauge -= 100;
+                // 设置冷却时间
+                if (skill.cd > 0) skill.currentCd = skill.cd;
+                
+                // 执行技能
+                runSkillEffect('boss', skill);
+                
+                // 更新UI
+                updateBossUI();
+                updatePlayerUI();
+                updateMohuroUI();
+                
+                // 检查战斗结束
+                if (checkGameOver()) return;
+            } else {
+                addLog('enemy', `${bossData.name}沒有可用技能！`);
+            }
+            
+            // 魔須羅攻击（修复：只攻击敌方，不被己方攻击）
+            if (mohuroData.isAlive) {
+                mohuroData.attackCounter++;
+                if (mohuroData.attackCounter >= 2) {
+                    mohuroData.attackCounter = 0;
+                    const target = mohuroData.summoner === 'player' ? bossData : playerData;
+                    const targetType = mohuroData.summoner === 'player' ? 'boss' : 'player';
+                    
+                    const dmg = calcPhysDmg(mohuroData.physicalAtk, target.def, 1);
+                    target.hp = Math.max(0, target.hp - dmg);
+                    addLog('enemy', `魔須羅對${target.name}造成${dmg}點傷害！`);
+                    
+                    // 更新目标UI
+                    targetType === 'player' ? updatePlayerUI() : updateBossUI();
+                    
+                    // 检查战斗结束
+                    if (checkGameOver()) return;
+                }
+            }
+            
+            // 宿儺回血
+            if (bossData.name === '宿儺' && mohuroData.isAlive && mohuroData.summoner === 'boss') {
+                const heal = Math.floor(bossData.maxHp * 0.05);
+                bossData.hp = Math.min(bossData.maxHp, bossData.hp + heal);
+                addLog('enemy', `宿儺透過魔須羅回復${heal}點生命值！`);
+                updateBossUI();
+            } else if (playerData.name === '宿儺' && mohuroData.isAlive && mohuroData.summoner === 'player') {
+                const heal = Math.floor(playerData.maxHp * 0.05);
+                playerData.hp = Math.min(playerData.maxHp, playerData.hp + heal);
+                addLog('player', `宿儺透過魔須羅回復${heal}點生命值！`);
+                updatePlayerUI();
+            }
+            
+            // 切换回合
+            currentTurn = 'player';
+            document.getElementById('turnIndicator').textContent = `你的回合 - ${playerData.name}準備攻擊！`;
+            generateSkills();
+        }
+        
+        // 16. 下一回合处理（新增：递减技能冷却时间，确保技能可重复使用）
+        function nextRound() {
+            // 递减玩家技能冷却
+            playerData.skills.forEach(skill => {
+                if (skill.currentCd > 0) {
+                    skill.currentCd--;
+                }
+            });
+            
+            // 递减BOSS技能冷却
+            bossData.skills.forEach(skill => {
+                if (skill.currentCd > 0) {
+                    skill.currentCd--;
+                }
+            });
+            
+            // 处理眩晕状态
+            if (playerStunned) {
+                playerStunned = false;
+                addLog('system', `${playerData.name}的行動限制解除！`);
+            }
+            
+            if (bossStunned && !skill.id === 'domainVoid') { // 领域眩晕持续2回合，单独处理
+                bossStunned = false;
+                addLog('system', `${bossData.name}的行動限制解除！`);
+            }
+        }
+        
+        // 17. 检查游戏结束（修复：魔須羅死亡判断正确）
+        function checkGameOver() {
+            if (playerData.hp <= 0) {
+                showGameOver(false);
+                return true;
+            }
+            if (bossData.hp <= 0) {
+                showGameOver(true);
+                return true;
+            }
+            // 魔須羅死亡处理（修复：只有HP<=0时才判定死亡）
+            if (mohuroData.isAlive && mohuroData.hp <= 0) {
+                mohuroData.isAlive = false;
+                addLog('system', `魔須羅被消滅！`);
+                
+                // 移除召唤者防禦加成
+                if (mohuroData.summoner === 'player') {
+                    playerData.def -= 500;
+                    updatePlayerUI();
+                } else {
+                    bossData.def -= 500;
+                    updateBossUI();
+                }
+                
+                // 隐藏魔須羅面板
+                const mohuroPanel = document.querySelector('.mohuro-panel');
+                if (mohuroPanel) mohuroPanel.style.display = 'none';
+            }
+            return false;
+        }
+        
+        // 18. 显示游戏结束弹窗
+        function showGameOver(isWin) {
+            gameStarted = false;
+            const modal = document.getElementById('gameOverModal');
+            document.getElementById('gameOverTitle').textContent = isWin ? '戰鬥勝利！' : '戰鬥失敗！';
+            document.getElementById('gameOverMessage').textContent = isWin 
+                ? `${playerData.name}擊敗了${bossData.name}，成為新宿之戰的最強者！`
+                : `${bossData.name}擊敗了${playerData.name}，新宿淪陷...`;
+            modal.style.display = 'flex';
+        }
+        
+        // 19. 重新开始游戏
+        function restartGame() {
+            document.getElementById('gameOverModal').style.display = 'none';
+            selectScreen.style.display = 'flex';
+            battleScreen.style.display = 'none';
+            
+            // 重置状态
+            selectedChar = null;
+            playerData = null;
+            bossData = null;
+            gameStarted = false;
+            currentTurn = 'player';
+            playerStunned = false;
+            bossStunned = false;
+            
+            // 重置卡片和按钮
+            gojoCard.classList.remove('selected');
+            sukunaCard.classList.remove('selected');
+            startBtn.disabled = true;
+            
+            // 重置日志
+            document.getElementById('logPanel').innerHTML = '<div class="log-entry log-system">戰鬥開始！誰將贏得新宿之戰？</div>';
+        }
+        
+        // 20. 添加战斗日志（确保执行）
+        function addLog(type, content) {
+            const logPanel = document.getElementById('logPanel');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.innerHTML = content;
+            logPanel.appendChild(logEntry);
+            logPanel.scrollTop = logPanel.scrollHeight;
+        }
+    </script>
+</body>
+</html>
